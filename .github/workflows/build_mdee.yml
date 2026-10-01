@@ -1,0 +1,74 @@
+name: Build M'DEE ESP32-S3 N4R2 OLED6
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Configure Arduino CLI
+        run: |
+          arduino-cli config init
+          arduino-cli config set network.connection_timeout 600s
+
+      - name: Add Espressif board package index
+        run: |
+          arduino-cli config set board_manager.additional_urls \
+            https://espressif.github.io/arduino-esp32/package_esp32_index.json
+
+      - name: Update Arduino indexes
+        run: |
+          arduino-cli core update-index
+          arduino-cli lib update-index
+
+      - name: Install ESP32 core 2.0.14
+        run: |
+          arduino-cli core install esp32:esp32@2.0.14
+
+      - name: Install required Arduino libraries
+        run: |
+          arduino-cli config set library.enable_unsafe_install true
+          arduino-cli lib install "LinkedList"
+          arduino-cli lib install "ArduinoJson"
+          arduino-cli lib install --git-url https://github.com/marian-craciunescu/ESP32Ping
+          arduino-cli lib install "Adafruit GFX Library"
+          arduino-cli lib install "Adafruit SSD1306"
+          arduino-cli lib install "Adafruit NeoPixel"
+          arduino-cli lib install "TFT_eSPI"
+          arduino-cli lib install "ESPAsyncWebServer"
+          arduino-cli lib install "AsyncTCP"
+
+      - name: Install libraries bundled in repository
+        run: |
+          if [ -d "libraries" ]; then
+            find libraries -maxdepth 2 -name library.properties -print
+          fi
+
+      - name: Show installed libraries
+        run: |
+          arduino-cli lib list --all
+
+      - name: Compile M'DEE firmware
+        run: |
+          arduino-cli compile \
+            --fqbn esp32:esp32:esp32s3:FlashSize=4M,PSRAM=enabled \
+            --libraries ./libraries \
+            --output-dir build \
+            ./esp32_marauder
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: MDEE-ESP32S3-N4R2-OLED6
+          path: build/
