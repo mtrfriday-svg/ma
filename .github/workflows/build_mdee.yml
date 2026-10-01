@@ -49,6 +49,7 @@ jobs:
           arduino-cli lib install "ESPAsyncWebServer"
           arduino-cli lib install "AsyncTCP"
           arduino-cli lib install "NimBLE-Arduino"
+          arduino-cli lib install "MicroNMEA"
 
       - name: Install libraries bundled in repository
         run: |
