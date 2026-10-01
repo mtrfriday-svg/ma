@@ -48,6 +48,7 @@ jobs:
           arduino-cli lib install "TFT_eSPI"
           arduino-cli lib install "ESPAsyncWebServer"
           arduino-cli lib install "AsyncTCP"
+          arduino-cli lib install "NimBLE-Arduino"
 
       - name: Install libraries bundled in repository
         run: |
